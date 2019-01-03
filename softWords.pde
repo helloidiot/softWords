@@ -1,34 +1,26 @@
 // TO DO
+// -Mode selector-
+// input / control
+// -Text-
+// Text is layed out nicely, centered and not overlapping screen
 // Text moves onto new line
-// Render pixels in a different way so no gaps
-// ControlP5 to allow for variable control
-// Add Bees and bombs motion blur
-// Etienne Jacob gif export
-// More ways of drawing otehr than grid -
+// -GUI-
+// Extend ControlP5 for more control
+// -Text drawing-
+// Decreasing grid
+// Circles draw
 
 import controlP5.*;
 
+// Class declerations
 GUI gui;
 Type type;
 
 OpenSimplexNoise simplexNoise;
 ControlP5 cp5;
 
-// Motion blur
-int[][] result;
-float t, c;
-float mn = .5 * sqrt(3);
-float ia = atan(sqrt(.5));
-int samplesPerFrame = 5; // times to sample each frame
-int numFrames = 96; // 4 secs at 24fps
-float shutterAngle = 1.5; // 180 degree shutter
-boolean recording = false;
-float recordingStart;
-int time = 1;
-float speed = 0.01;
-
 void settings(){
-  size(800,800);
+  size(700,1000);
 
   // 8x anti-aliasing, not sure if this does anything...
   smooth(8);
@@ -54,7 +46,13 @@ void draw() {
   background(0);
 
   if (!recording) {
+    t = mouseX*1.0/width;
+    c = mouseY*1.0/height;
+    if (mousePressed){
+      println(c);
+    }
     type.display();
+    // type.update();
   }
   else {
     motionBlur();
@@ -64,7 +62,22 @@ void draw() {
  }
 
 // Bees & bombs motion blur
+int[][] result;
+float t, c;
+float mn = .5 * sqrt(3);
+float ia = atan(sqrt(.5));
+int samplesPerFrame = 5; // times to sample each frame
+int numFrames; // 4 secs at 24fps
+float shutterAngle = 1.5; // 180 degree shutter
+boolean recording = false;
+float recordingStart;
+int time = 1;
+float speed = 0.01;
+
 void motionBlur(){
+
+  numFrames = sNumFrames;
+
   for (int i=0; i<width*height; i++){
     for (int a=0; a<3; a++){
       result[i][a] = 0;
@@ -94,7 +107,7 @@ void motionBlur(){
   }
   updatePixels();
 
-  saveFrame("softWords" + time + ".png");
+  saveFrame("img/softWords" + time + ".png");
   println(time,"/",numFrames);
 
   time++;
@@ -106,10 +119,6 @@ void motionBlur(){
 
 void keyPressed(){
   // At some point change this to a GUI input
-  if (keyCode == UP){
-    recordingStart = time;
-    recording = true;
-  }
   type.keyInput();
 }
 

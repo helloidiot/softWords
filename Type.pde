@@ -1,3 +1,7 @@
+// Mode selector
+boolean mode = true; // input = false, control = true
+String currentMode = "";
+
 // Pixel array
 float[][] pArray;
 
@@ -5,12 +9,14 @@ PImage img;
 PGraphics pg;
 PFont font;
 
+int pgW, pgH;
+
 float frequency;
 int w;
 int h;
 
 // Pixel size
-int pixelSize = 1;
+int pixelSize = 2;
 
 // Noise variables
 float scale = 10;
@@ -26,18 +32,17 @@ class Type {
   // Type
   void init(){
 
-    w = width/pixelSize;
-    h = height/pixelSize;
+    pgW = 700;
+    pgH = 700;
+
+    w = pgW/pixelSize;
+    h = pgH/pixelSize;
 
     // Noise
     simplexNoise = new OpenSimplexNoise();
 
     pg = createGraphics(w, h);
     font = createFont("OpticianSans-Regular", 100);
-
-    // Test image
-    // img = loadImage("test.png");
-
 
     // Initialise pixel array
     pArray = new float[w][h];
@@ -56,19 +61,22 @@ class Type {
   }
 
   void fitText(String text, PFont font, PGraphics p, float posX, float posY, float fitX, float fitY){
+    push();
     p.textFont(font);
     float txtSz = min(font.getSize() * fitX / p.textWidth(text), fitY);
     p.textSize(txtSz);
 
     // Create grid of words
     // Loop until we reach the bottom of the image
-    while (posY < h-(pg.textAscent()/3)){
+    while (posY < h-(pg.textAscent())){
       //// Reduce font size by half per line - NOT WORKING
       // float txtSz2 = min(font.getSize() * (fitX/2) / (p.textWidth(text)/2), fitY);
       // p.textSize(txtSz2);
+      // p.scale(0.5);
       p.text(text, posX, posY);
       posY += p.textAscent();
     }
+    pop();
   }
 
   void display(){
@@ -77,9 +85,9 @@ class Type {
 
     for (int y = 0; y < h-1; y++) {
 
-      frequency += 0.01;
-      float mx = mouseX;
-      float my = mouseY;
+      frequency += sFrequency;
+      float mx = sMX;
+      float my = sMY;
       float wi = w;
       float hi = h;
 
@@ -117,7 +125,31 @@ class Type {
     pg.clear();
   }
 
+  void update(){
+    // Check for change in pixel size
+    w = width/pixelSize;
+    h = height/pixelSize;
+
+    // Re-Initialise pixel array
+    pArray = new float[w][h];
+  }
+
   void keyInput(){
+
+    if (keyCode == ENTER || keyCode == RETURN){
+      // Mode switch
+      mode = !mode;
+      if (mode){
+        currentMode = "input";
+      }
+      else {
+        currentMode = "control";
+      }
+      println(currentMode);
+    }
+
+    // INPUT MODE
+    if (mode){
       // Remove last entered letter
       if (keyCode == BACKSPACE){
           if (input.length() > 0){
@@ -126,23 +158,33 @@ class Type {
       }
       // Empty entry
       else if (keyCode == DELETE){
-          input = "";
+        input = "";
       }
-
-      // Change scaling / pixelSize
-      else if (key == '='){
-        pixelSize += 1;
-      }
-      else if (key == '-'){
-        if (pixelSize != 1){
-            pixelSize -= 1;
-          }
-      }
-
       // Add entered key to String
       else {
-          input = input + key;
+        input = input + key;
       }
+    }
+
+    // CONTROL MODE
+    if (!mode){
+      if (keyCode == UP){
+        recordingStart = time;
+        recording = true;
+      }
+
+      // // Change scaling / pixelSize
+      // else if (key == '='){
+      //   pixelSize += 1;
+      // }
+      // else if (key == '-'){
+      //   if (pixelSize != 1){
+      //       pixelSize -= 1;
+      //   }
+      // }
+    }
+
+
   }
 
   void debug(){
